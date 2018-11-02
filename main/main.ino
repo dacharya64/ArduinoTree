@@ -3,6 +3,7 @@
  * It uses an input heartbeat sensor to control audio output and LED light strands. 
  * 
  * NOTE: To use, please make sure PuseSensor Playground is installed. 
+ * Sketch -> Include Library -> Manage Libraries -> search for "PulseSensor Playground" and install version 
  */
  
 #define USE_ARDUINO_INTERRUPTS true    // Set-up low-level interrupts for most acurate BPM math.
