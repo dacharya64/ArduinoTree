@@ -36,6 +36,9 @@
 
    See ProcessEverySample.ino for an example of not using interrupts.
 */
+#define USE_ARDUINO_INTERRUPTS true
+#include <PulseSensorPlayground.h>
+
 /*
    The format of our output.
 
@@ -90,6 +93,7 @@ void setup() {
   pulseSensor.setSerial(Serial);
   pulseSensor.setOutputType(OUTPUT_TYPE);
   pulseSensor.setThreshold(THRESHOLD);
+ 
 
   // Now that everything is ready, start reading the PulseSensor signal.
   if (!pulseSensor.begin()) {
@@ -112,28 +116,24 @@ void setup() {
 }
 
 void loop() {
-  int myBPM = pulseSensor.getBeatsPerMinute();  // Calls function on our pulseSensor object that returns BPM as an "int".
-
-  if (pulseSensor.sawStartOfBeat()) {
-   Serial.println(" A HeartBeat Happened ! "); // If test is "true", print a message "a heartbeat happened".
-   Serial.print("BPM: ");                        // Print phrase "BPM: " 
-   Serial.println(myBPM);                        // Print the value inside of myBPM. 
-   pulseSensor.outputBeat();
-  }
-  
   /*
      Wait a bit.
      We don't output every sample, because our baud rate
      won't support that much I/O.
   */
+
   delay(20);
 
   // write the latest sample to Serial.
- pulseSensor.outputSample();
+ //pulseSensor.outputSample();
 
   /*
      If a beat has happened since we last checked,
      write the per-beat information to Serial.
    */
-  
+  if (pulseSensor.sawStartOfBeat()) {
+        Serial.println("beat");
+   pulseSensor.outputBeat();
+
+  }
 }
