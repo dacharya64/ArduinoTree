@@ -115,6 +115,43 @@ void setup() {
   }
 }
 
+void Blink(int pin) {
+    brightness = 255;
+        analogWrite(pin, brightness);
+        brightness = 240;
+        analogWrite(pin, brightness);
+        delay(30);
+        brightness = 220;
+        analogWrite(pin, brightness);
+        delay(30);
+        brightness = 200;
+        analogWrite(pin, brightness);
+        delay(30);
+        brightness = 170;
+        analogWrite(pin, brightness);
+        delay(30);
+        brightness = 150;
+        analogWrite(pin, brightness);
+        delay(30);
+        brightness = 120;
+        analogWrite(pin, brightness);
+        delay(30);
+        brightness = 100;
+        analogWrite(PULSE_BLINK, brightness);
+        delay(30);
+        brightness = 80;
+        analogWrite(PULSE_BLINK, brightness);
+        delay(30);
+        brightness = 50;
+        analogWrite(pin, brightness);
+        delay(30);
+        brightness = 20;
+        analogWrite(pin, brightness);
+        delay(30);
+        brightness = 0;
+        analogWrite(pin, brightness);
+    }
+
 void loop() {
   /*
      Wait a bit.
@@ -133,35 +170,10 @@ void loop() {
    */
   if (pulseSensor.sawStartOfBeat()) {
         Serial.println("beat");
-        brightness = 255;
-        analogWrite(PULSE_BLINK, brightness);
-        brightness = 240;
-        analogWrite(PULSE_BLINK, brightness);
-        delay(30);
-        brightness = 220;
-        analogWrite(PULSE_BLINK, brightness);
-        delay(30);
-        brightness = 200;
-        analogWrite(PULSE_BLINK, brightness);
-        brightness = 150;
-        analogWrite(PULSE_BLINK, brightness);
-        delay(30);
-        brightness = 100;
-        analogWrite(PULSE_BLINK, brightness);
-        delay(30);
-        brightness = 50;
-        analogWrite(PULSE_BLINK, brightness);
-        delay(30);
-        brightness = 0;
-        analogWrite(PULSE_BLINK, brightness);
-       
-      
-        // reverse the direction of the fading at the ends of the fade:
-        
-        // wait for 30 milliseconds to see the dimming effect
-        //delay(30);
-        
+        Blink(PULSE_BLINK);
+        //Blink(PULSE_FADE);
    pulseSensor.outputBeat();
 
   }
+  
 }
