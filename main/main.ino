@@ -36,8 +36,7 @@
 
    See ProcessEverySample.ino for an example of not using interrupts.
 */
-#define USE_ARDUINO_INTERRUPTS true
-#include <PulseSensorPlayground.h>
+
 
 /*
    The format of our output.
@@ -63,9 +62,14 @@ const int OUTPUT_TYPE = SERIAL_PLOTTER;
       pin 9 or 10, because those pins' PWM interferes with the sample timer.
 */
 const int PULSE_INPUT = A0;
-const int PULSE_BLINK = 13;    // Pin 13 is the on-board LED
-const int PULSE_FADE = 5;
+const int PULSE_BLINK = 5;    // Pin 13 is the on-board LED
+const int PULSE_FADE = 6;
 const int THRESHOLD = 550;   // Adjust this number to avoid noise when idle
+
+int brightness = 255;    // how bright the LED is
+int fadeAmount = 50;    // how many points to fade the LED by
+
+
 
 /*
    All the PulseSensor Playground functions.
@@ -87,12 +91,14 @@ void setup() {
   // Configure the PulseSensor manager.
 
   pulseSensor.analogInput(PULSE_INPUT);
-  pulseSensor.blinkOnPulse(PULSE_BLINK);
+  //pulseSensor.fadeOnPulse(PULSE_BLINK);
   pulseSensor.fadeOnPulse(PULSE_FADE);
 
   pulseSensor.setSerial(Serial);
   pulseSensor.setOutputType(OUTPUT_TYPE);
   pulseSensor.setThreshold(THRESHOLD);
+
+  pinMode(PULSE_BLINK, OUTPUT);
  
 
   // Now that everything is ready, start reading the PulseSensor signal.
@@ -105,13 +111,7 @@ void setup() {
        If your Sketch hangs here, try PulseSensor_BPM_Alternative.ino,
        which doesn't use interrupts.
     */
-    for(;;) {
-      // Flash the led to show things didn't work.
-      digitalWrite(PULSE_BLINK, LOW);
-      delay(50);
-      digitalWrite(PULSE_BLINK, HIGH);
-      delay(50);
-    }
+   
   }
 }
 
@@ -133,6 +133,34 @@ void loop() {
    */
   if (pulseSensor.sawStartOfBeat()) {
         Serial.println("beat");
+        brightness = 255;
+        analogWrite(PULSE_BLINK, brightness);
+        brightness = 240;
+        analogWrite(PULSE_BLINK, brightness);
+        delay(30);
+        brightness = 220;
+        analogWrite(PULSE_BLINK, brightness);
+        delay(30);
+        brightness = 200;
+        analogWrite(PULSE_BLINK, brightness);
+        brightness = 150;
+        analogWrite(PULSE_BLINK, brightness);
+        delay(30);
+        brightness = 100;
+        analogWrite(PULSE_BLINK, brightness);
+        delay(30);
+        brightness = 50;
+        analogWrite(PULSE_BLINK, brightness);
+        delay(30);
+        brightness = 0;
+        analogWrite(PULSE_BLINK, brightness);
+       
+      
+        // reverse the direction of the fading at the ends of the fade:
+        
+        // wait for 30 milliseconds to see the dimming effect
+        //delay(30);
+        
    pulseSensor.outputBeat();
 
   }
