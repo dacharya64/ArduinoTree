@@ -1,11 +1,11 @@
 /*
- * This is the main file for DANM 219 final project 
- * It uses an input heartbeat sensor to control audio output and LED light strands. 
- * 
- * NOTE: To use, please make sure PulseSensor Playground is installed. 
- * Sketch -> Include Library -> Manage Libraries -> search for "PulseSensor Playground" and install version 1.4.11 (currently the latest version)
- */
- 
+   This is the main file for DANM 219 final project
+   It uses an input heartbeat sensor to control audio output and LED light strands.
+
+   NOTE: To use, please make sure PulseSensor Playground is installed.
+   Sketch -> Include Library -> Manage Libraries -> search for "PulseSensor Playground" and install version 1.4.11 (currently the latest version)
+*/
+
 #define USE_ARDUINO_INTERRUPTS true    // Set-up low-level interrupts for most acurate BPM math.
 #include <PulseSensorPlayground.h>     // Includes the PulseSensorPlayground Library.   
 
@@ -54,22 +54,16 @@ const int OUTPUT_TYPE = SERIAL_PLOTTER;
    Pinout:
      PULSE_INPUT = Analog Input. Connected to the pulse sensor
       purple (signal) wire.
-     PULSE_BLINK = digital Output. Connected to an LED (and 220 ohm resistor)
-      that will flash on each detected pulse.
-     PULSE_FADE = digital Output. PWM pin onnected to an LED (and resistor)
+     lightPins = digital Output. PWM pin onnected to an LED (and resistor)
       that will smoothly fade with each pulse.
-      NOTE: PULSE_FADE must be a pin that supports PWM. Do not use
-      pin 9 or 10, because those pins' PWM interferes with the sample timer.
 */
 const int PULSE_INPUT = A0;
-const int PULSE_BLINK = 5;    // Pin 13 is the on-board LED
-const int PULSE_FADE = 6;
 const int THRESHOLD = 550;   // Adjust this number to avoid noise when idle
+const int START_BRIGHTNESS = 255;    // how bright the LED starts off
+const int END_BRIGHTNESS = 0;    // how bright the LED ends at
+const int FADE_AMT = 20;    // how many points to fade the LED by
 
-int brightness = 255;    // how bright the LED is
-int fadeAmount = 50;    // how many points to fade the LED by
-
-
+int lightPins[] = {6, 5, 3, 11};
 
 /*
    All the PulseSensor Playground functions.
@@ -89,17 +83,15 @@ void setup() {
   Serial.begin(115200);
 
   // Configure the PulseSensor manager.
-
   pulseSensor.analogInput(PULSE_INPUT);
-  //pulseSensor.fadeOnPulse(PULSE_BLINK);
-  pulseSensor.fadeOnPulse(PULSE_FADE);
-
   pulseSensor.setSerial(Serial);
   pulseSensor.setOutputType(OUTPUT_TYPE);
   pulseSensor.setThreshold(THRESHOLD);
 
-  pinMode(PULSE_BLINK, OUTPUT);
- 
+  // Set all the pins' pinmode so they can properly output light
+  for (int i = 0; i < sizeof lightPins / sizeof lightPins[0]; i++) {
+    pinMode(lightPins[i], OUTPUT);
+  }
 
   // Now that everything is ready, start reading the PulseSensor signal.
   if (!pulseSensor.begin()) {
@@ -107,73 +99,25 @@ void setup() {
        PulseSensor initialization failed,
        likely because our particular Arduino platform interrupts
        aren't supported yet.
-
-       If your Sketch hangs here, try PulseSensor_BPM_Alternative.ino,
-       which doesn't use interrupts.
     */
-   
   }
 }
 
-void Blink(int pin) {
-    brightness = 255;
-        analogWrite(pin, brightness);
-        brightness = 240;
-        analogWrite(pin, brightness);
-        delay(30);
-        brightness = 220;
-        analogWrite(pin, brightness);
-        delay(30);
-        brightness = 200;
-        analogWrite(pin, brightness);
-        delay(30);
-        brightness = 170;
-        analogWrite(pin, brightness);
-        delay(30);
-        brightness = 150;
-        analogWrite(pin, brightness);
-        delay(30);
-        brightness = 120;
-        analogWrite(pin, brightness);
-        delay(30);
-        brightness = 100;
-        analogWrite(PULSE_BLINK, brightness);
-        delay(30);
-        brightness = 80;
-        analogWrite(PULSE_BLINK, brightness);
-        delay(30);
-        brightness = 50;
-        analogWrite(pin, brightness);
-        delay(30);
-        brightness = 20;
-        analogWrite(pin, brightness);
-        delay(30);
-        brightness = 0;
-        analogWrite(pin, brightness);
-    }
+void Blink(int pin, int pin2) {
+  for (int i = START_BRIGHTNESS; i >= END_BRIGHTNESS; i = i - FADE_AMT) {
+    analogWrite(pin, i);
+    analogWrite(pin2, i);
+    delay(30);
+  }
+}
 
 void loop() {
-  /*
-     Wait a bit.
-     We don't output every sample, because our baud rate
-     won't support that much I/O.
-  */
-
-  delay(20);
-
-  // write the latest sample to Serial.
- //pulseSensor.outputSample();
-
-  /*
-     If a beat has happened since we last checked,
-     write the per-beat information to Serial.
-   */
+  // If you detect a heartbeat, blink the lights in the lightPins array
   if (pulseSensor.sawStartOfBeat()) {
-        Serial.println("beat");
-        Blink(PULSE_BLINK);
-        //Blink(PULSE_FADE);
-   pulseSensor.outputBeat();
-
+    Blink(5, 6);
+    Blink(3, 11);
+    for (int i = 0; i < sizeof lightPins / sizeof lightPins[0]; i++) {
+      analogWrite(lightPins[i], END_BRIGHTNESS);
+    }
   }
-  
 }
