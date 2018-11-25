@@ -86,7 +86,14 @@ void setup() {
   // Whew! We got past the tough parts.
   putstring_nl("Ready!");
   putstring_nl("Setting up...");
-  playcomplete("SO.WAV");
+  playcomplete("HEARTTWO.WAV");
+  playcomplete("FAFAFAFA.WAV");
+  playcomplete("FAFAFAFA.WAV");
+  playcomplete("FAFAFAFA.WAV");
+  playcomplete("FAFAFAFA.WAV");
+  playcomplete("FAFAFAFA.WAV");
+  playcomplete("FAFAFAFA.WAV");
+  playcomplete("FAFAFAFA.WAV");
   putstring_nl("Done setting up");
 }
 
@@ -149,9 +156,7 @@ int freeRam(void)
   return free_memory; 
 } 
 
-
-
 void loop() {
-  playcomplete("SO.WAV");
+  playcomplete("HEARTTWO.WAV");
   delay(3000);
 }
