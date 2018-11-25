@@ -6,7 +6,7 @@
    Sketch -> Include Library -> Manage Libraries -> search for "PulseSensor Playground" and install version 1.4.11 (currently the latest version)
 */
 
-#define USE_ARDUINO_INTERRUPTS true    // Set-up low-level interrupts for most acurate BPM math.
+#define USE_ARDUINO_INTERRUPTS false    // Set-up low-level interrupts for most acurate BPM math.
 #include <PulseSensorPlayground.h>     // Includes the PulseSensorPlayground Library.   
 
 /*
@@ -64,6 +64,8 @@ const int END_BRIGHTNESS = 0;    // how bright the LED ends at
 const int FADE_AMT = 20;    // how many points to fade the LED by
 
 int lightPins[] = {6, 5, 3, 11};
+byte samplesUntilReport;
+const byte SAMPLES_PER_SERIAL_SAMPLE = 10;
 
 /*
    All the PulseSensor Playground functions.
@@ -112,12 +114,28 @@ void Blink(int pin, int pin2) {
 }
 
 void loop() {
-  // If you detect a heartbeat, blink the lights in the lightPins array
-  if (pulseSensor.sawStartOfBeat()) {
-    Blink(5, 6);
-    Blink(3, 11);
-    for (int i = 0; i < sizeof lightPins / sizeof lightPins[0]; i++) {
-      analogWrite(lightPins[i], END_BRIGHTNESS);
+  if (pulseSensor.sawNewSample()) {
+    /*
+       Every so often, send the latest Sample.
+       We don't print every sample, because our baud rate
+       won't support that much I/O.
+    */
+    if (--samplesUntilReport == (byte) 0) {
+      samplesUntilReport = SAMPLES_PER_SERIAL_SAMPLE;
+
+      pulseSensor.outputSample();
+
+      /*
+         At about the beginning of every heartbeat,
+         report the heart rate and inter-beat-interval.
+      */
+      if (pulseSensor.sawStartOfBeat()) {
+        Blink(5, 6);
+        Blink(3, 11);
+        for (int i = 0; i < sizeof lightPins / sizeof lightPins[0]; i++) {
+          analogWrite(lightPins[i], END_BRIGHTNESS);
+        }
+      }
     }
   }
 }

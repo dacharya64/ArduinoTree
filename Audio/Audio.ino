@@ -1,13 +1,13 @@
 /*
-   This is the main file for DANM 219 final project
+   This is the file for controling audio for DANM 219 final project
    It uses an input heartbeat sensor to control audio output and LED light strands.
 
    NOTE: To use, please make sure PulseSensor Playground and WaveHC libraries are installed.
    Sketch -> Include Library -> Manage Libraries -> search for "PulseSensor Playground" and install version 1.4.11 (currently the latest version) and "WaveHC" (version 1.0)
 */
 
-//#define USE_ARDUINO_INTERRUPTS true    // Set-up low-level interrupts for most acurate BPM math.
-//#include <PulseSensorPlayground.h>     // Includes the PulseSensorPlayground Library.   
+#define USE_ARDUINO_INTERRUPTS false    // Set-up low-level interrupts for most acurate BPM math.
+#include <PulseSensorPlayground.h>     // Includes the PulseSensorPlayground Library.   
 #include "WaveUtil.h"
 #include "WaveHC.h"
 #include <FatReader.h>
@@ -21,18 +21,24 @@ FatReader f;      // This holds the information for the file we're playing
  
 WaveHC wave;      // This is the only wave (audio) object, since we will only play one at a time
 
-//const int PULSE_INPUT = A0;
-//const int THRESHOLD = 550;   // Adjust this number to avoid noise when idle
+const int PULSE_INPUT = A0;
+const int THRESHOLD = 550;   // Adjust this number to avoid noise when idle
+const int START_BRIGHTNESS = 255;    // how bright the LED starts off
+const int END_BRIGHTNESS = 0;    // how bright the LED ends at
+const int FADE_AMT = 20;    // how many points to fade the LED by
+
+
+byte samplesUntilReport;
+const byte SAMPLES_PER_SERIAL_SAMPLE = 10;
 
 /*
    All the PulseSensor Playground functions.
 */
-//PulseSensorPlayground pulseSensor;
+PulseSensorPlayground pulseSensor;
+
+
 
 void setup() {
-  
-
-  
   /*
      Use 115200 baud because that's what the Processing Sketch expects to read,
      and because that speed provides about 11 bytes per millisecond.
@@ -44,10 +50,22 @@ void setup() {
   */
   Serial.begin(115200);
 
+   // Configure the PulseSensor manager.
+  pulseSensor.analogInput(PULSE_INPUT);
+  pulseSensor.setSerial(Serial);
+  pulseSensor.setThreshold(THRESHOLD);
+
   putstring("Free RAM: ");       // This can help with debugging, running out of RAM is bad
   Serial.println(freeRam());      // if this is under 150 bytes it may spell trouble!
-  
-  pinMode(13, OUTPUT);
+
+  // Now that everything is ready, start reading the PulseSensor signal.
+  if (!pulseSensor.begin()) {
+    /*
+       PulseSensor initialization failed,
+       likely because our particular Arduino platform interrupts
+       aren't supported yet.
+    */
+  }
  
   //  if (!card.init(true)) { //play with 4 MHz spi if 8MHz isn't working for you
   if (!card.init()) {         //play with 8 MHz spi (default faster!)  
@@ -85,16 +103,6 @@ void setup() {
   
   // Whew! We got past the tough parts.
   putstring_nl("Ready!");
-  putstring_nl("Setting up...");
-  playcomplete("HEARTTWO.WAV");
-  playcomplete("FAFAFAFA.WAV");
-  playcomplete("FAFAFAFA.WAV");
-  playcomplete("FAFAFAFA.WAV");
-  playcomplete("FAFAFAFA.WAV");
-  playcomplete("FAFAFAFA.WAV");
-  playcomplete("FAFAFAFA.WAV");
-  playcomplete("FAFAFAFA.WAV");
-  putstring_nl("Done setting up");
 }
 
 void sdErrorCheck(void)
@@ -106,7 +114,6 @@ void sdErrorCheck(void)
   Serial.println(card.errorData(), HEX);
   while(1);
 }
-
 
 // Plays a full file from beginning to end with no pause.
 void playcomplete(char *name) {
@@ -134,11 +141,9 @@ void playfile(char *name) {
   if (!wave.create(f)) {
     putstring_nl("Not a valid WAV"); return;
   }
-  wave.create(f);
   
   // ok time to play! start playback
   wave.play();
-  
 }
 
 // this handy function will return the number of bytes currently free in RAM, great for debugging!   
@@ -157,6 +162,24 @@ int freeRam(void)
 } 
 
 void loop() {
-  playcomplete("HEARTTWO.WAV");
-  delay(3000);
+  if (pulseSensor.sawNewSample()) {
+    /*
+       Every so often, send the latest Sample.
+       We don't print every sample, because our baud rate
+       won't support that much I/O.
+    */
+    if (--samplesUntilReport == (byte) 0) {
+      samplesUntilReport = SAMPLES_PER_SERIAL_SAMPLE;
+
+      pulseSensor.outputSample();
+
+      /*
+         At about the beginning of every heartbeat,
+         report the heart rate and inter-beat-interval.
+      */
+      if (pulseSensor.sawStartOfBeat()) {
+        playcomplete("HEARTTWO.WAV");
+      }
+    }
+  }
 }
