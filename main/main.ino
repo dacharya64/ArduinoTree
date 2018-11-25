@@ -63,7 +63,7 @@ const int START_BRIGHTNESS = 255;    // how bright the LED starts off
 const int END_BRIGHTNESS = 0;    // how bright the LED ends at
 const int FADE_AMT = 20;    // how many points to fade the LED by
 
-int lightPins[] = {6, 5, 3, 11};
+int lightPins[] = {6, 5, 12, 11};
 byte samplesUntilReport;
 const byte SAMPLES_PER_SERIAL_SAMPLE = 10;
 
@@ -131,7 +131,7 @@ void loop() {
       */
       if (pulseSensor.sawStartOfBeat()) {
         Blink(5, 6);
-        Blink(3, 11);
+        Blink(12, 11);
         for (int i = 0; i < sizeof lightPins / sizeof lightPins[0]; i++) {
           analogWrite(lightPins[i], END_BRIGHTNESS);
         }

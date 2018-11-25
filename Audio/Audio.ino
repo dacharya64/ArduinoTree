@@ -103,6 +103,7 @@ void setup() {
   
   // Whew! We got past the tough parts.
   putstring_nl("Ready!");
+   delay(3000);
 }
 
 void sdErrorCheck(void)
@@ -178,6 +179,7 @@ void loop() {
          report the heart rate and inter-beat-interval.
       */
       if (pulseSensor.sawStartOfBeat()) {
+        playcomplete("HEARTONE.WAV");
         playcomplete("HEARTTWO.WAV");
       }
     }
