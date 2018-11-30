@@ -9,6 +9,66 @@
 #define USE_ARDUINO_INTERRUPTS false    // Set-up low-level interrupts for most acurate BPM math.
 #include <PulseSensorPlayground.h>     // Includes the PulseSensorPlayground Library.   
 
+/* ----------------------------------------------------------------------
+ *  
+ *  HARDWARE SETUP
+ *  --------------
+ *  
+ *  Needed: 
+ *  2 Arduinos 
+ *    -1 with Sound Shield [SOUND ARDUINO]
+ *    -Other to control lights [LIGHTS ARDUINO]
+ *  Heartbeat sensor
+ *  
+ *  
+ *  Wiring 
+ *  ------
+ *  Plug in heartbeat sensor on the Sound Arduino, putting red wire into 5V and black wire into ground
+ *  
+ *  Put purple wire of heartbeat sensor into breadboard, run 2 leads from that input into A0 of both Arduinos
+ *  
+ *  Link Ground of Lights Arduino to breadboard ground, then to ground of Sound Arduino
+ *  
+ *  // Audio
+ *  Make sure that Sound Shield arduino has SD card with sound files on it, and that output (speaker) is connected to headphone jack
+ *  Make sure that volume (round knob on right side of sound shield) is turned up
+ *  The headphone jack can be finicky, so you might have to mess with it a bit to get the sound outputting properly
+ *  
+ *  // Lights
+ *  Light output should be running from the Lights Arduino into the breadboard
+ *  Select PWM pins you want to use (any should work) and run leads from those pins to the breadboard
+ *  Place the positive end of the LEDs you want to use in line with the wire from the Lights Arduino
+ *  Place a resistor between the negative end of the LED and the breadboard ground
+ *  
+ *  
+ *  Update Code
+ *  -----------
+ *  Update the code below to include the pins you are using for the lights: 
+ *  
+ *  1) update lightPins[] array with all pin values used
+ *  2) Update Blink() calls to include the pins you want to blink. 
+ *     First Blink() call will blink all those pins at the same time, then a delay, then the next Blink() call pins will flash
+ *  
+ *  
+ *  Uploading Code 
+ *  --------------
+ *  Load "Audio" Arduino code onto Sound Arduino
+ *  Load this file ("Main") onto Lights Arduino
+ *  
+ *  Make sure both Arduinos are recieving power.
+ *  
+ * 
+ *  User Instructions
+ *  -----------------
+ *  Place your finger lightly on the heartbeat sensor and wait 5 seconds
+ *  You should now hear audio coming from the speaker, and the LEDs should blink in time with your heartbeat
+ *  
+ *  
+ *  ----------------------------------------------------------------------
+ */
+
+
+
 /*
    Code to detect pulses from the PulseSensor,
    using an interrupt service routine.
@@ -57,13 +117,15 @@ const int OUTPUT_TYPE = SERIAL_PLOTTER;
      lightPins = digital Output. PWM pin onnected to an LED (and resistor)
       that will smoothly fade with each pulse.
 */
-const int PULSE_INPUT = A0;
-const int THRESHOLD = 550;   // Adjust this number to avoid noise when idle
+const int PULSE_INPUT = A0;  // The input for the PulseSensor data 
+const int THRESHOLD = 550;   // Threshold of heartbeat sensor. Adjust this number to avoid noise when idle
 const int START_BRIGHTNESS = 255;    // how bright the LED starts off
 const int END_BRIGHTNESS = 0;    // how bright the LED ends at
-const int FADE_AMT = 20;    // how many points to fade the LED by
+const int FADE_AMT = 15;    // how many points to fade the LED by
 
-int lightPins[] = {6, 5, 12, 11};
+long previousMillis = 0;
+
+int lightPins[] = {6, 5, 10, 11};
 byte samplesUntilReport;
 const byte SAMPLES_PER_SERIAL_SAMPLE = 10;
 
@@ -109,33 +171,59 @@ void Blink(int pin, int pin2) {
   for (int i = START_BRIGHTNESS; i >= END_BRIGHTNESS; i = i - FADE_AMT) {
     analogWrite(pin, i);
     analogWrite(pin2, i);
-    delay(30);
+    delay(20);
   }
 }
 
-void loop() {
-  if (pulseSensor.sawNewSample()) {
-    /*
-       Every so often, send the latest Sample.
-       We don't print every sample, because our baud rate
-       won't support that much I/O.
-    */
-    if (--samplesUntilReport == (byte) 0) {
-      samplesUntilReport = SAMPLES_PER_SERIAL_SAMPLE;
+void loop() { 
+//  
+//  if (pulseSensor.sawNewSample()) {
+//    /*
+//       Every so often, send the latest Sample.
+//       We don't print every sample, because our baud rate
+//       won't support that much I/O.
+//
+//       Use this to operate in conjunction with Sound Shield
+//    */
+//    if (--samplesUntilReport == (byte) 0) {
+//      samplesUntilReport = SAMPLES_PER_SERIAL_SAMPLE;
+//
+//      pulseSensor.outputSample();
+//
+//      /*
+//         At about the beginning of every heartbeat,
+//         report the heart rate and inter-beat-interval.
+//      */
+//      if (pulseSensor.sawStartOfBeat()) {
+//        Blink(5, 6);
+//        Blink(10, 11);
+//        //for (int i = 0; i < sizeof lightPins / sizeof lightPins[0]; i++) {
+//        //  analogWrite(lightPins[i], END_BRIGHTNESS);
+//        //}
+//      }
+//    }
+//  }
 
-      pulseSensor.outputSample();
+   /* THIS OPERATES IN PLACE OF THE HEARTBEAT SENSOR CODE
+   * Use only if trying to operate independent of heartbeat sensor data
+   */
 
-      /*
-         At about the beginning of every heartbeat,
-         report the heart rate and inter-beat-interval.
-      */
-      if (pulseSensor.sawStartOfBeat()) {
-        Blink(5, 6);
-        Blink(12, 11);
-        for (int i = 0; i < sizeof lightPins / sizeof lightPins[0]; i++) {
-          analogWrite(lightPins[i], END_BRIGHTNESS);
-        }
-      }
-    }
-  }
+   Blink(5, 6);
+   Blink(10, 11);
+   delay(650);
 }
+
+
+
+//
+//void Blink(int pin, int pin2) {
+//  brightness = START_BRIGHTNESS;
+//  // previousMillis = currentMillis;
+//  currentMillis = millis();
+//  if(currentMillis - previousMillis > 20) {
+//    analogWrite(pin, brightness);
+//    analogWrite(pin2, brightness);
+//    brightness = brightness - FADE_AMT;
+//    previousMillis = currentMillis;   
+//  }
+//}

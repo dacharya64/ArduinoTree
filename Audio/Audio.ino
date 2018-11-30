@@ -163,25 +163,34 @@ int freeRam(void)
 } 
 
 void loop() {
-  if (pulseSensor.sawNewSample()) {
-    /*
-       Every so often, send the latest Sample.
-       We don't print every sample, because our baud rate
-       won't support that much I/O.
-    */
-    if (--samplesUntilReport == (byte) 0) {
-      samplesUntilReport = SAMPLES_PER_SERIAL_SAMPLE;
+//  if (pulseSensor.sawNewSample()) {
+//    /*
+//       Every so often, send the latest Sample.
+//       We don't print every sample, because our baud rate
+//       won't support that much I/O.
+//    */
+//    if (--samplesUntilReport == (byte) 0) {
+//      samplesUntilReport = SAMPLES_PER_SERIAL_SAMPLE;
+//
+//      pulseSensor.outputSample();
+//
+//      /*
+//         At about the beginning of every heartbeat,
+//         report the heart rate and inter-beat-interval.
+//      */
+//      if (pulseSensor.sawStartOfBeat()) {
+//        playcomplete("HEARTONE.WAV");
+//        playcomplete("HEARTTWO.WAV");
+//      }
+//    }
+//  }
 
-      pulseSensor.outputSample();
+  
+   /* THIS OPERATES IN PLACE OF THE HEARTBEAT SENSOR CODE
+   * Use only if trying to operate independent of heartbeat sensor data
+   */
 
-      /*
-         At about the beginning of every heartbeat,
-         report the heart rate and inter-beat-interval.
-      */
-      if (pulseSensor.sawStartOfBeat()) {
-        playcomplete("HEARTONE.WAV");
-        playcomplete("HEARTTWO.WAV");
-      }
-    }
-  }
+   playcomplete("HEARTONE.WAV");
+   playcomplete("HEARTTWO.WAV");
+   delay(600);
 }
