@@ -122,12 +122,15 @@ const int THRESHOLD = 550;   // Threshold of heartbeat sensor. Adjust this numbe
 const int START_BRIGHTNESS = 255;    // how bright the LED starts off
 const int END_BRIGHTNESS = 0;    // how bright the LED ends at
 const int FADE_AMT = 15;    // how many points to fade the LED by
+const int DELAY = 20;
 
 long previousMillis = 0;
 
 int lightPins[] = {6, 5, 10, 11};
 byte samplesUntilReport;
 const byte SAMPLES_PER_SERIAL_SAMPLE = 10;
+
+unsigned long time_now = 0;
 
 /*
    All the PulseSensor Playground functions.
@@ -171,7 +174,11 @@ void Blink(int pin, int pin2) {
   for (int i = START_BRIGHTNESS; i >= END_BRIGHTNESS; i = i - FADE_AMT) {
     analogWrite(pin, i);
     analogWrite(pin2, i);
-    delay(20);
+    //delay(20);
+    time_now = millis();
+    while(millis() < time_now + DELAY){
+        //wait approx. [period] ms
+    }
   }
 }
 
@@ -212,8 +219,6 @@ void loop() {
    Blink(10, 11);
    delay(650);
 }
-
-
 
 //
 //void Blink(int pin, int pin2) {
