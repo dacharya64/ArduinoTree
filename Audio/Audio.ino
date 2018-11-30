@@ -192,5 +192,5 @@ void loop() {
 
    playcomplete("HEARTONE.WAV");
    playcomplete("HEARTTWO.WAV");
-   delay(600);
+   delay(500);
 }
