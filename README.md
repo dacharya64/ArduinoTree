@@ -5,7 +5,7 @@ CircuiTree was created as a electronic art project for DANM 219 - Electronic Art
 
 ![CircuitreeGif](http://www.devi-a.com/images/CircuitreeGif.gif)
 
-![See the Video](http://www.devi-a.com/images/CircuitreeDemo.mp4)
+[See the Video](http://www.devi-a.com/images/CircuitreeDemo.mp4)
 
 
 ## Hardware Setup
