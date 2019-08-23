@@ -3,10 +3,6 @@
 ## About the Project
 CircuiTree was created as a electronic art project for DANM 219 - Electronic Artmaking at UCSC. It is a tree-shaped sculpture made of metal, with lights and a speakers connected by two Arduinos to a heartbeat sensor at the base of the tree. The lights and speakers emit light and sound in time with the viewer's heartbeat. 
 
-<img src="http://www.devi-a.com/images/CircuitreeGif.gif" width="400" />
-
-[See the Video](http://www.devi-a.com/images/CircuitreeDemo.mp4)
-
 
 ## Hardware Setup
 Needed: 
